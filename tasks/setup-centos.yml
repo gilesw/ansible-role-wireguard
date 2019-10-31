@@ -5,7 +5,12 @@
     url: https://copr.fedorainfracloud.org/coprs/jdoss/wireguard/repo/epel-7/jdoss-wireguard-epel-7.repo
     dest: /etc/yum.repos.d/wireguard.repo
 
-- name: Install EPEL repository
+- name: Install EPEL repository and kernel headers for the running kernel
   yum:
-    name: epel-release
+    name: "{{ item }}"
     update_cache: yes
+    allow_downgrade: yes
+  with_items:
+    - 'epel-release'
+    - "kernel-headers-{{ ansible_kernel }}"
+    - "kernel-devel-{{ ansible_kernel }}"
