@@ -27,6 +27,24 @@
   tags:
     - wg-install
 
+- name: enable ipv4 forwarding
+  sysctl:
+    name: net.ipv4.ip_forward
+    value: 1
+    sysctl_set: yes
+    state: present
+    reload: yes
+  when: wireguard_ip_forward
+
+- name: enable ipv6 forwarding
+  sysctl:
+    name: net.ipv6.conf.all.forwarding
+    value: 1
+    sysctl_set: yes
+    state: present
+    reload: yes
+  when: wireguard_ip_forward
+
 - name: Set WireGuard IP (without mask)
   set_fact:
     wireguard_ip: "{{ wireguard_address.split('/')[0] }}"
