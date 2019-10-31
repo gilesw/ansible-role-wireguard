@@ -16,3 +16,6 @@ wireguard_port: "51820"
 
 # The interface name that wireguard should use.
 wireguard_interface: "wg0"
+
+# set this to a specific host when you want to just perform a single site 2 site link
+wireguard_peer_list: "{{ ansible_play_hosts }}"

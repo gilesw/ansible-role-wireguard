@@ -16,7 +16,7 @@ PostDown = {{hostvars[inventory_hostname].wireguard_postdown}}
 SaveConfig = true
 {% endif %}
 
-{% for host in ansible_play_hosts %}
+{% for host in wireguard_peer_list %}
   {% if host != inventory_hostname %}
     [Peer]
     PublicKey = {{hostvars[host].public_key}}
