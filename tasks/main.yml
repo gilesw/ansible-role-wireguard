@@ -145,11 +145,3 @@
     enabled: yes
   when: wireguard_manage
 
-- name: Delete local cert directory
-  file:
-    path: "{{ wireguard_cert_directory }}"
-    state: absent
-  delegate_to: localhost
-  run_once: true
-  tags:
-    - wg-config

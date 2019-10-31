@@ -7,7 +7,7 @@ I used [PeerVPN](https://peervpn.net/) before but that wasn't updated for a whil
 
 In general WireGuard is a network tunnel (VPN) for IPv4 and IPv6 that uses UDP. If you need more information about [WireGuard](https://www.wireguard.io/) you can find a good introduction here: [Installing WireGuard, the Modern VPN](https://research.kudelskisecurity.com/2017/06/07/installing-wireguard-the-modern-vpn/).
 
-This role was tested with Ubuntu 18.04 (Bionic Beaver), Debian 9 (Stretch) and Archlinux. It might also work with Ubuntu 16.04 (Xenial Xerus) but haven't tested it. If someone tested it let me please know if it works ;-)
+This role was tested with Ubuntu 18.04 (Bionic Beaver), Debian 9 (Stretch), Centos 7 and Archlinux. It might also work with Ubuntu 16.04 (Xenial Xerus) but haven't tested it. If someone tested it let me please know if it works ;-)
 
 Versions
 --------
@@ -27,18 +27,9 @@ see [CHANGELOG.md](https://github.com/githubixx/ansible-role-wireguard/blob/mast
 Role Variables
 --------------
 
-This variables can be changed in `group_vars/`:
+These variables can be changed in `group_vars/`:
 
 ```
-# LOCAL directory where the WireGuard certificates used to be stored 
-# in older version of this role.
-# Private keys are now read from the remote host, public key are derived 
-# from private key
-#
-# This config is kept to be able to delete the old folder, as having 
-# all the private keys locally is not a security best practice.
-wireguard_cert_directory: "{{ '~/wireguard/certs' | expanduser }}"
-
 # Directory to store WireGuard configuration on the remote hosts
 wireguard_remote_directory: "/etc/wireguard"
 
@@ -47,6 +38,16 @@ wireguard_port: "51820"
 
 # The interface name that wireguard should use.
 wireguard_interface: "wg0"
+
+# set this to a specific host when you want to just perform a single site 2 site link
+wireguard_peer_list: "{{ ansible_play_hosts }}"
+
+# sysctl to allow ip forwarding between interfaces
+wireguard_ip_forward: true
+
+# Set to false to not manage the wireguard config or service
+# if you are using something like the subspace gui
+wireguard_manage: true
 ```
 
 The following variable is mandatory and needs to be configured for every host in `host_vars/`:
@@ -69,7 +70,7 @@ AllowedIPs = 10.8.0.101/32
 Endpoint = controller01.p.domain.tld:51820
 ```
 
-This is part of the WireGuard config from my workstation. It has the VPN IP `10.8.0.2` and we've a `/24` subnet in which all my WireGuard hosts are located. Also you can see we've a peer here that has the endpoint `controller01.p.domain.tld:51820`. When `wireguard_allowed_ips` is not explicitly set the Ansible template will add an `AllowedIPs` entry with the IP of that host plus `/32`. In WireGuard this basically specifies the routing. The config above says: On my workstation with the IP `10.8.0.2` I want send all traffic to `10.8.0.101/32` to the endpoint `controller01.p.domain.tld:51820`. Now let's assume we set `wireguard_allowed_ips: "0.0.0.0/0"`. Then the resulting config looks like this.
+This is part of the WireGuard config from my workstation. It has the VPN IP `10.8.0.2` and we've a `/24` subnet in which all my WireGuard hosts are located. Also you can see we've a peer here that has the endpoint `controller01.p.domain.tld:51820`. When `wireguard_allowed_ips` is not explicitly set the Ansible template will add an `AllowedIPs` entry with the IP of that host plus `/32`. In WireGuard this basically specifies the routing. The config above says: On my workstation with the IP `10.8.0.2` I want send all traffic to `10.8.0.101/32` to the endpoint `controller01.p.domain.tld:51820`. Now let's assume we set `wireguard_allowed_ips: - "0.0.0.0/0"`. Then the resulting config looks like this.
 
 ```
 [Interface]
@@ -259,11 +260,15 @@ vpn1:
   hosts:
     multi:
       wireguard_address: 10.9.0.1/32
-      wireguard_allowed_ips: "10.9.0.1/32, 192.168.2.0/24"
+      wireguard_allowed_ips:
+        - "10.9.0.1/32"
+        - "192.168.2.0/24"
       wireguard_endpoint: multi.exemple.com
     nated:
       wireguard_address: 10.9.0.2/32
-      wireguard_allowed_ips: "10.9.0.2/32, 192.168.3.0/24"
+      wireguard_allowed_ips:
+        - "10.9.0.2/32"
+        - "192.168.3.0/24"
       wireguard_persistent_keepalive: 15
       wireguard_endpoint: nated.exemple.com
       wireguard_postup: "iptables -t nat -A POSTROUTING -o ens12 -j MASQUERADE"
