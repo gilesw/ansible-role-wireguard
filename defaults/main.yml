@@ -22,3 +22,7 @@ wireguard_peer_list: "{{ ansible_play_hosts }}"
 
 # sysctl to allow ip forwarding between interfaces
 wireguard_ip_forward: true
+
+# Set to false to not manage the wireguard config or service
+# if you are using something like the subspace gui
+wireguard_manage: true
