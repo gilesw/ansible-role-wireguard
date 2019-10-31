@@ -21,7 +21,7 @@ SaveConfig = true
     [Peer]
     PublicKey = {{hostvars[host].public_key}}
     {% if hostvars[host].wireguard_allowed_ips is defined %}
-    AllowedIPs = {{hostvars[host].wireguard_allowed_ips}}
+    AllowedIPs = {{ hostvars[host].wireguard_allowed_ips|join(', ') }}
     {% else %}
     AllowedIPs = {{hostvars[host].wireguard_ip}}/32
     {% endif %}
